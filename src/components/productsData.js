@@ -262,3 +262,4 @@ export const ALL_PRODUCTS = [
     material: "100% Polyester microfibre", care: "Machine wash cold", sku: "LYR-DFT-026",
   },
 ];
+

@@ -850,10 +850,9 @@
 
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-
+import { bannerApiFetch } from '@/utils/bannerApi';
 // ── API Configuration ─────────────────────────────────────────────
 const API_BASE = "http://localhost:6055/api/admin";
-
 // Shared fetch helper — attaches auth token, returns parsed JSON
 const apiFetch = async (path, options = {}) => {
   const user  = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -862,7 +861,7 @@ const apiFetch = async (path, options = {}) => {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...(options.headers || {}),
     },
   });
@@ -1107,6 +1106,7 @@ const AdminPanel = () => {
     }
   }, []);
 
+  
   // GET /api/orders  — expects: array of order objects
   const fetchOrders = useCallback(async () => {
     setLoad("orders", true); setError("orders", null);
@@ -1159,12 +1159,25 @@ const AdminPanel = () => {
     }
   }, []);
 
+  const fetchBanners = useCallback(async () => {
+    setLoad("banners", true);
+    try {
+      const data = await bannerApiFetch("/");
+      setBanners(data);
+    } catch (e) {
+      setError("banners", e.message);
+    } finally {
+      setLoad("banners", false);
+    }
+  }, []);
+
   // Fetch dashboard data (orders + products + customers) on mount
   useEffect(() => {
     fetchOrders();
     fetchProducts();
     fetchCustomers();
-  }, [fetchOrders, fetchProducts, fetchCustomers]);
+    fetchBanners();
+  }, [fetchOrders, fetchProducts, fetchCustomers, fetchBanners]);
 
   // Lazy-fetch analytics & settings when their tab is first opened
   useEffect(() => {
@@ -1292,6 +1305,8 @@ const AdminPanel = () => {
     );
   }, [customers, searchQuery]);
 
+
+
   const NAV = [
     { id: "dashboard", icon: "◈", label: "Dashboard" },
     { id: "orders",    icon: "◉", label: "Orders",   badge: pendingOrders },
@@ -1299,7 +1314,291 @@ const AdminPanel = () => {
     { id: "customers", icon: "◎", label: "Customers" },
     { id: "analytics", icon: "◈", label: "Analytics" },
     { id: "settings",  icon: "◍", label: "Settings" },
+    { id: "banners",   icon: "▦", label: "Banners" },
   ];
+
+  // Banners
+  // ── Banner Management ──────────────────────────────────────────────
+const [banners, setBanners] = useState([]);
+const [bannerModal, setBannerModal] = useState(null);
+
+
+
+  const handleSaveBanner = async (formData) => {
+  try {
+    const { _id, ...cleanData } = formData;
+
+    if (_id) {
+      // UPDATE
+      await bannerApiFetch(`/${_id}`, {
+        method: "PUT",
+        body: cleanData,
+      });
+    } else {
+      // CREATE
+      await bannerApiFetch(`/`, {
+        method: "POST",
+        body: cleanData,
+      });
+    }
+
+    alert("✅ Banner saved successfully");
+  } catch (err) {
+    console.error("Banner save error:", err.message);
+    alert("❌ Failed to save banner");
+  }
+};
+ const handleDeleteBanner = async (id) => {
+  try {
+    await bannerApiFetch(`/${id}`, {
+      method: "DELETE",
+    });
+
+    alert("🗑 Banner deleted");
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+  // Banner Modal Component
+  const BannerModal = ({ banner, onSave, onClose }) => {
+    const [form, setForm] = useState(banner || {
+      title: "",
+      subtitle: "",
+      image: "",
+      link: "",
+      isActive: true,
+      position: "top",
+      colorFrom: "from-purple-900",
+      colorVia: "via-violet-800",
+      colorTo: "to-purple-600",
+      ctaText: "Shop Now"
+    });
+
+    const COLOR_PRESETS = [
+      { name: "Purple", from: "from-purple-900", via: "via-violet-800", to: "to-purple-600" },
+      { name: "Blue", from: "from-slate-900", via: "via-blue-900", to: "to-blue-700" },
+      { name: "Amber", from: "from-stone-900", via: "via-amber-900", to: "to-amber-700" },
+      { name: "Emerald", from: "from-gray-900", via: "via-emerald-900", to: "to-emerald-700" },
+      { name: "Pink", from: "from-gray-900", via: "via-pink-900", to: "to-pink-700" }
+    ];
+
+    const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+    const suggestColors = () => {
+
+      const nextPreset = COLOR_PRESETS[(COLOR_PRESETS.findIndex(p => p.form === form.colorFrom) + 1) % COLOR_PRESETS.length];
+      setForm(f => ({
+        ...f,
+        colorFrom: nextPreset.from,
+        colorVia: nextPreset.via,
+        colorTo: nextPreset.to
+      }));
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSave(form); // Call handleSaveBanner with the form data
+    };
+
+    return (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4 z-10">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 sticky top-0 bg-white z-10">
+            <h2 className="font-semibold text-gray-900 text-lg">{banner ? "Edit Banner" : "Add New Banner"}</h2>
+            <button onClick={onClose} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors text-sm">✕</button>
+          </div>
+
+          <div className="p-6 space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Title *</label>
+                <input value={form.title} onChange={(e) => set("title", e.target.value)} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Subtitle</label>
+                <input value={form.subtitle} onChange={(e) => set("subtitle", e.target.value)} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Image URL *</label>
+                <input value={form.image} onChange={(e) => set("image", e.target.value)} 
+                  placeholder="https://example.com/banner.jpg"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+              </div>
+              <div className="col-span-2">
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                Image URL *
+              </label>
+              <div className="flex gap-3">
+                <input
+                  value={form.image}
+                  onChange={(e) => set("image", e.target.value)}
+                  placeholder="https://example.com/banner.jpg"
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={suggestColors}
+                  className="px-3 py-2.5 bg-violet-100 text-violet-700 rounded-xl text-sm font-medium hover:bg-violet-200 transition-colors"
+                >
+                  Suggest Colors
+                </button>
+              </div>
+              {form.image && (
+                <div className="mt-2 border rounded-lg overflow-hidden relative">
+                  <img
+                    src={form.image}
+                    alt="Preview"
+                    className="w-full h-auto max-h-40 object-cover"
+                    onError={(e) => { e.target.src = "https://placehold.co/600x200/1e0a3c/a855f7?text=Invalid+URL"; }}
+                  />
+                  {/* Color overlay preview */}
+                  <div 
+                    className={`absolute inset-0 bg-gradient-to-r ${form.colorFrom} ${form.colorVia} ${form.colorTo} opacity-30 pointer-events-none`}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Color Selection */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Gradient Start
+                </label>
+                <select
+                  value={form.colorFrom}
+                  onChange={(e) => set("colorFrom", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 bg-white transition-all"
+                >
+                  {COLOR_PRESETS.map((preset) => (
+                    <option key={`from-${preset.name}`} value={preset.from}>
+                      {preset.name} Start
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Gradient Mid
+                </label>
+                <select
+                  value={form.colorVia}
+                  onChange={(e) => set("colorVia", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 bg-white transition-all"
+                >
+                  {COLOR_PRESETS.map((preset) => (
+                    <option key={`via-${preset.name}`} value={preset.via}>
+                      {preset.name} Mid
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Gradient End
+                </label>
+                <select
+                  value={form.colorTo}
+                  onChange={(e) => set("colorTo", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 bg-white transition-all"
+                >
+                  {COLOR_PRESETS.map((preset) => (
+                    <option key={`to-${preset.name}`} value={preset.to}>
+                      {preset.name} End
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Color Preview */}
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                Gradient Preview
+              </label>
+              <div 
+                className={`h-12 rounded-xl w-full bg-gradient-to-r ${form.colorFrom} ${form.colorVia} ${form.colorTo}`}
+              />
+              <div className="flex gap-2 mt-2">
+                {COLOR_PRESETS.map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => {
+                      set("colorFrom", preset.from);
+                      set("colorVia", preset.via);
+                      set("colorTo", preset.to);
+                    }}
+                    className={`h-8 flex-1 rounded-lg bg-gradient-to-r ${preset.from} ${preset.via} ${preset.to}`}
+                    title={`Use ${preset.name} preset`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* CTA Text */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                Button Text
+              </label>
+              <input
+                value={form.ctaText}
+                onChange={(e) => set("ctaText", e.target.value)}
+                placeholder="e.g. Shop Now"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all"
+              />
+            </div>
+          </div> 
+
+          {/* Product Details */}
+          <div className="space-y-4">   
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Title</label>
+              <input
+                value={form.title}
+                onChange={(e) => set("title", e.target.value)}
+                placeholder="e.g. Summer Collection"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all"
+              />
+            </div>                            
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Position</label>
+                <select value={form.position} onChange={(e) => set("position", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-500 bg-white transition-all">
+                  {["top", "middle", "bottom"].map((p) => (
+                    <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Status</label>
+                <div className="flex items-center gap-3 mt-2">
+                  <label className="inline-flex items-center">
+                    <input type="checkbox" checked={form.isActive} onChange={(e) => set("isActive", e.target.checked)}
+                      className="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 focus:ring-opacity-50" />
+                    <span className="ml-2 text-sm text-gray-600">Active</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 px-6 py-5 border-t border-gray-100 sticky bottom-0 bg-white">
+            <button onClick={onClose} className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-all">Cancel</button>
+            <button onClick={() => onSave(form)}
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-bold hover:shadow-lg hover:shadow-violet-200 transition-all">
+              {banner ? "Save Changes" : "Add Banner"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+
 
   // Revenue chart data (from analytics or derived from orders)
   const revenueData = analytics?.revenue || [];
@@ -1764,6 +2063,73 @@ const AdminPanel = () => {
             </div>
           )}
 
+          {/* ════ Banners ════ */}
+
+          {section === "banners" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-white/40 text-sm">{banners.length} banners</p>
+                <div className="flex gap-2">
+                  <button onClick={fetchBanners} className="text-xs text-violet-400 hover:text-violet-300 px-3 py-2 rounded-xl border border-violet-500/20 hover:border-violet-500/40 transition-all">
+                    ↻ Refresh
+                  </button>
+                  <button onClick={() => setBannerModal("new")}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-violet-900/50 transition-all">
+                    + Add Banner
+                  </button>
+                </div>
+              </div>
+
+              {loading.banners ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48" />)}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {banners.map((banner) => (
+                    <div key={banner._id} className="bg-[#130d24] border border-white/5 rounded-2xl overflow-hidden hover:border-violet-500/20 transition-all">
+                      <div className="relative aspect-[3/1] bg-white/5">
+                        <img src={banner.image} alt={banner.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.src = "https://placehold.co/600x200/1e0a3c/a855f7?text=Banner"; }} />
+                        {!banner.isActive && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span className="text-white/80 text-sm font-bold">INACTIVE</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-white font-medium">{banner.title}</h3>
+                            {banner.subtitle && <p className="text-white/50 text-sm mt-1">{banner.subtitle}</p>}
+                          </div>
+                          <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full border border-violet-500/20">
+                            {banner.position}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          <button onClick={() => setBannerModal(banner)}
+                            className="flex-1 py-2 rounded-lg bg-white/5 text-white/60 text-xs font-semibold hover:bg-violet-500/20 hover:text-violet-300 transition-all border border-white/5">
+                            ✏️ Edit
+                          </button>
+                          <button onClick={() => handleDeleteBanner(banner._id)}
+                            className="flex-1 py-2 rounded-lg bg-white/5 text-white/60 text-xs font-semibold hover:bg-red-500/20 hover:text-red-400 transition-all border border-white/5">
+                            🗑 Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {banners.length === 0 && !loading.banners && (
+                    <div className="col-span-3 text-center py-12 text-white/30 text-sm">No banners found</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+
           {/* ════ ANALYTICS ════ */}
           {section === "analytics" && (
             <div className="space-y-6">
@@ -1963,6 +2329,15 @@ const AdminPanel = () => {
           product={productModal === "new" ? null : productModal}
           onSave={handleSaveProduct}
           onClose={() => setProductModal(null)}
+        />
+      )}
+
+      {/* Banner Modal */}
+      {bannerModal && (
+        <BannerModal
+          banner={bannerModal === "new" ? null : bannerModal}
+          onSave={handleSaveBanner}
+          onClose={() => setBannerModal(null)}
         />
       )}
 

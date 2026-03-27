@@ -713,3 +713,4 @@ useEffect(() => {
 };
 
 export default CartPage;
+

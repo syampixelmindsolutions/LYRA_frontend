@@ -1,8 +1,12 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCart } from "./CartContext";
 import AddToCartModal from "./AddToCartModal";
-import { ALL_PRODUCTS } from "./productsData.js";
+import axios from "axios";
+
+const API = axios.create({
+  baseURL: "http://localhost:6055/api/admin",
+});
 
 const SORT_OPTIONS = [
   { value: "popular",    label: "Most Popular" },
@@ -46,9 +50,28 @@ const CategoryPage = () => {
   const [viewMode,     setViewMode]     = useState("grid");
   const [modalProduct, setModalProduct] = useState(null);
 
-  const base = useMemo(() =>
-    category === "All" ? ALL_PRODUCTS : ALL_PRODUCTS.filter((p) => p.category === category),
-  [category]);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data } = await API.get("/products");
+
+        const filtered =
+          category === "All"
+            ? data
+            : data.filter((p) => p.category === category);
+
+        setProducts(filtered);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProducts();
+  }, [category]);
+
+  const base = useMemo(() => products, [products]);
 
   const brands  = [...new Set(base.map((p) => p.brand))];
   const genders = [...new Set(base.map((p) => p.gender))];
@@ -307,12 +330,12 @@ const CategoryPage = () => {
             }>
               {filtered.map((p) => {
                 const disc     = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
-                const isWished = wishlist.includes(p.id);
-                const isAdded  = addedCart.includes(p.id);
+                const isWished = wishlist.includes(p._id);
+                const isAdded  = addedCart.includes(p._id);
 
                 if (viewMode === "list") {
                   return (
-                    <div key={p.id} onClick={() => navigate(`/product/${p.id}`)} className="bg-white rounded-2xl border border-purple-100 hover:border-violet-300 hover:shadow-lg hover:shadow-purple-50 transition-all flex overflow-hidden cursor-pointer">
+                    <div key={p._id} onClick={() => navigate(`/product/${p._id}`)} className="bg-white rounded-2xl border border-purple-100 hover:border-violet-300 hover:shadow-lg hover:shadow-purple-50 transition-all flex overflow-hidden cursor-pointer">
                       <div className="w-44 h-44 flex-shrink-0 bg-purple-50 overflow-hidden">
                         <img src={p.image} alt={p.name} className="w-full h-full object-cover"
                           onError={(e) => { e.target.src = "https://placehold.co/300x400/f3f4f6/9ca3af?text=Lyra"; }} />
@@ -348,7 +371,7 @@ const CategoryPage = () => {
                           </div>
                           <div className="flex gap-2">
                             <button
-                              onClick={(e) => { e.stopPropagation(); setWishlist((w) => w.includes(p.id) ? w.filter((i) => i !== p.id) : [...w, p.id]); }}
+                              onClick={(e) => { e.stopPropagation(); setWishlist((w) => w.includes(p._id) ? w.filter((i) => i !== p._id) : [...w, p._id]); }}
                               className="w-9 h-9 rounded-xl border border-purple-100 flex items-center justify-center text-lg hover:border-pink-300 transition-colors"
                               style={{ color: isWished ? "#ef4444" : "#d1d5db" }}
                             >
@@ -368,14 +391,14 @@ const CategoryPage = () => {
                 }
 
                 return (
-                  <div key={p.id} onClick={() => navigate(`/product/${p.id}`)} className="bg-white rounded-2xl border border-purple-100 overflow-hidden group hover:border-violet-300 hover:shadow-xl hover:shadow-purple-100 hover:-translate-y-1 transition-all duration-300 relative cursor-pointer">
+                  <div key={p._id} onClick={() => navigate(`/product/${p._id}`)} className="bg-white rounded-2xl border border-purple-100 overflow-hidden group hover:border-violet-300 hover:shadow-xl hover:shadow-purple-100 hover:-translate-y-1 transition-all duration-300 relative cursor-pointer">
                     {p.badge && (
                       <span className="absolute top-2 left-2 z-10 bg-gradient-to-r from-violet-600 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
                         {p.badge}
                       </span>
                     )}
                     <button
-                      onClick={(e) => { e.stopPropagation(); setWishlist((w) => w.includes(p.id) ? w.filter((i) => i !== p.id) : [...w, p.id]); }}
+                      onClick={(e) => { e.stopPropagation(); setWishlist((w) => w.includes(p._id) ? w.filter((i) => i !== p._id) : [...w, p._id]); }}
                       className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-lg hover:scale-110 transition-transform"
                       style={{ color: isWished ? "#ef4444" : "#d1d5db" }}
                     >
