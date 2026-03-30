@@ -1,4 +1,4 @@
-const BANNER_API_BASE = "http://localhost:6055/api/banners";
+const BANNER_API_BASE = "http://localhost:6055/api/admin/banners";
 
 export const bannerApiFetch = async (path, options = {}) => {
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -20,6 +20,8 @@ export const bannerApiFetch = async (path, options = {}) => {
 
   return res.json();
 };
+
+
 
 // // src/utils/bannerApi.js
 // const BANNER_API_BASE = 'http://localhost:6055/api/admin';
