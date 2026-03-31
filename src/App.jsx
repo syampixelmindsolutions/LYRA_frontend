@@ -10,11 +10,21 @@ import { WishlistProvider } from "./components/WishlistContext";
 import WishlistPage from "./components/WishlistPage";
 import ProfilePage from "./ProfilePage";
 import AdminPanel from "./components/AdminPanel";
+import { useMemo } from "react";
 
 
 const ProtectedRoute = ({ children }) => {
-  const user = sessionStorage.getItem("user");
-  return user ? children : <Navigate to="/" replace />;
+  const isLoggedIn = useMemo(() => {
+    try {
+      const stored = sessionStorage.getItem("user");
+      if (!stored) return false;
+      const user = JSON.parse(stored);
+      return !!(user && user.token);
+    } catch {
+      return false;
+    }
+  }, []);
+  return isLoggedIn ? children : <Navigate to="/" replace />;
 };
 
 function App() {
@@ -38,6 +48,6 @@ function App() {
     </WishlistProvider >
     </CartProvider>
   );
-}
+};
 
 export default App;

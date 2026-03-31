@@ -3,11 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/styles.css">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>clothing_frontend</title>
+    <!-- <style>
+    /* Critical above-the-fold CSS */
+    body.preload * {
+      animation: none !important;
+      transition: none !important;
+    }
+  </style> -->
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.remove('preload');
+    });
+  </script> -->
   </body>
 </html>
