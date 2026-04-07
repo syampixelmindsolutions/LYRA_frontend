@@ -245,8 +245,10 @@ const AdminPanel = () => {
             />
           )}
           
-          <AdminCategories notify={notify} />
-
+          {section === "categories" && (
+            <AdminCategories notify={notify} />
+          )}
+          
           {section === "customers" && (
             <AdminCustomers
               customers={customers}

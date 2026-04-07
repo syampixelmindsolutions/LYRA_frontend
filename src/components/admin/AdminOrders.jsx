@@ -47,9 +47,6 @@ const apiFetch = async (path, options = {}) => {
   return res.json();
 };
 
-// ─────────────────────────────────────────────────────────────────
-// Delivery Progress Bar
-// ─────────────────────────────────────────────────────────────────
 const DeliveryProgress = ({ status }) => {
   const cancelled = status === "Cancelled";
   const activeIdx = cancelled ? -1 : DELIVERY_STEPS.indexOf(status);
@@ -88,10 +85,6 @@ const DeliveryProgress = ({ status }) => {
     </div>
   );
 };
-
-// ─────────────────────────────────────────────────────────────────
-// Resolve customer name from all possible fields in the order object
-// ─────────────────────────────────────────────────────────────────
 const resolveName = (order) =>
   order.userName
   || order.customerName
