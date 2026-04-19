@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── Backend base URL ──────────────────────────────────────────────
-const API_BASE = "http://localhost:6055/api/users";
+const API_BASE = "https://lyra-backend-gilt.vercel.app/api/users";
 
 // Logo — swap with your real logo import if needed
 const logo = "https://placehold.co/80x80/ffffff/0f0a1e?text=✦";

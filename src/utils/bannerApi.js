@@ -1,4 +1,4 @@
-const BANNER_API_BASE = "http://localhost:6055/api/admin/banners";
+const BANNER_API_BASE = "https://lyra-backend-gilt.vercel.app/api/admin/banners";
 
 export const bannerApiFetch = async (path, options = {}) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");

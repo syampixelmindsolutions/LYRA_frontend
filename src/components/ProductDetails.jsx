@@ -1369,7 +1369,7 @@ import { useCart }     from "./CartContext";
 import { useWishlist } from "./WishlistContext";
 import AddToCartModal  from "./AddToCartModal";
 
-const API_BASE = "http://localhost:6055/api";
+const API_BASE = "https://lyra-backend-gilt.vercel.app/api";
 
 const COLOR_MAP = {
   Black:"#111827",White:"#f9fafb",Navy:"#1e3a5f",Grey:"#9ca3af",Blue:"#3b82f6",

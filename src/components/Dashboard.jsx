@@ -3572,8 +3572,8 @@ import axios           from "axios";
 import LyraFooter      from "./Footer";
 
 // ── API instances ────────────────────────────────────────────────
-const API     = axios.create({ baseURL: "http://localhost:6055/api/admin" });
-const CAT_API = axios.create({ baseURL: "http://localhost:6055/api" });
+const API     = axios.create({ baseURL: "https://lyra-backend-gilt.vercel.app/api/admin" });
+const CAT_API = axios.create({ baseURL: "https://lyra-backend-gilt.vercel.app/api" });
 
 // Attach JWT from sessionStorage to every request automatically
 const attachToken = (instance) =>
@@ -4295,7 +4295,7 @@ const Dashboard = () => {
     if (!token) return;
     setStatsLoading(true);
     try {
-      const res = await fetch("http://localhost:6055/api/orders/my", {
+      const res = await fetch("https://lyra-backend-gilt.vercel.app/api/orders/my", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {

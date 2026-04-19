@@ -5,8 +5,8 @@ import { useWishlist } from "./WishlistContext";
 import AddToCartModal  from "./AddToCartModal";
 import axios from "axios";
 
-const PRODUCT_API = axios.create({ baseURL: "http://localhost:6055/api/admin/products" });
-const CAT_API     = axios.create({ baseURL: "http://localhost:6055/api" });
+const PRODUCT_API = axios.create({ baseURL: "https://lyra-backend-gilt.vercel.app/api/admin/products" });
+const CAT_API     = axios.create({ baseURL: "https://lyra-backend-gilt.vercel.app/api" });
 
 const COLOR_MAP = {
   Black:"#111827",White:"#f9fafb",Navy:"#1e3a5f",Grey:"#9ca3af",Blue:"#3b82f6",

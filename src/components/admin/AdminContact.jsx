@@ -24,7 +24,7 @@ const adminToken = () => {
 };
 
 const apiFetch = (path, opts = {}) =>
-  fetch(`http://localhost:6055/api${path}`, {
+  fetch(`https://lyra-backend-gilt.vercel.app/api${path}`, {
     ...opts,
     headers: {
       "Content-Type": "application/json",

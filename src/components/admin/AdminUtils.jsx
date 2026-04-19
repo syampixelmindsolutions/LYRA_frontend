@@ -1,5 +1,5 @@
 // ── Admin API helper ──────────────────────────────────────────────
-export const API_BASE = "http://localhost:6055/api/admin";
+export const API_BASE = "https://lyra-backend-gilt.vercel.app/api/admin";
 
 export const apiFetch = async (path, options = {}) => {
   const user  = JSON.parse(sessionStorage.getItem("user") || "{}");

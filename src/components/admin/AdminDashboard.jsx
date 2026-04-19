@@ -183,7 +183,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 // ─────────────────────────────────────────────────────────────────
 const apiFetch = async (path) => {
   const u   = JSON.parse(sessionStorage.getItem("user") || "{}");
-  const res = await fetch(`http://localhost:6055/api/admin${path}`, {
+  const res = await fetch(`https://lyra-backend-gilt.vercel.app/api/admin${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...(u.token ? { Authorization: `Bearer ${u.token}` } : {}),

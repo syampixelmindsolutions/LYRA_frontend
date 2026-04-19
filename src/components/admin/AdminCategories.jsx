@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { apiFetch } from "./AdminUtils.jsx";
 
-const CAT_BASE = "http://localhost:6055/api/admin/categories";
+const CAT_BASE = "https://lyra-backend-gilt.vercel.app/api/admin/categories";
 
 // ── tiny fetch wrapper scoped to /api/admin/categories ────────────
 const catFetch = (path = "", opts = {}) =>

@@ -228,7 +228,7 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton, ErrorBanner, apiFetch } from "./AdminUtils.jsx";
 
-const CAT_URL = "http://localhost:6055/api/categories";
+const CAT_URL = "https://lyra-backend-gilt.vercel.app/api/categories";
 
 // ── fetch categories from DB ──────────────────────────────────────
 const fetchCategories = () =>
@@ -485,12 +485,12 @@ const AdminProducts = ({ products, setProducts, loading, errors, onRetry, notify
 
       if (form._id || form.id) {
         const id = form._id || form.id;
-        res = await fetch(`http://localhost:6055/api/admin/products/${id}`, {
+        res = await fetch(`https://lyra-backend-gilt.vercel.app/api/admin/products/${id}`, {
           method: "PUT",
           body: formData,
         });
       } else {
-        res = await fetch(`http://localhost:6055/api/admin/products`, {
+        res = await fetch(`https://lyra-backend-gilt.vercel.app/api/admin/products`, {
           method: "POST",
           body: formData,
         });

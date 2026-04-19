@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useWishlist } from "./WishlistContext";
 import axios from "axios";
 
-const API = axios.create({ baseURL: "http://localhost:6055/api/admin" });
+const API = axios.create({ baseURL: "https://lyra-backend-gilt.vercel.app/api/admin" });
 
 // ── Attach JWT ────────────────────────────────────────────────────
 API.interceptors.request.use((cfg) => {

@@ -111,7 +111,7 @@ const AdminPanel = () => {
           return a.token || u.token || "";
         } catch { return ""; }
       })();
-      const res = await fetch("http://localhost:6055/api/contact?status=new&limit=1", {
+      const res = await fetch("https://lyra-backend-gilt.vercel.app/api/contact?status=new&limit=1", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {

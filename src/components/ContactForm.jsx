@@ -551,7 +551,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:6055/api/admin/contact/";
+const API_URL = "https://lyra-backend-gilt.vercel.app/api/admin/contact/";
 
 const SUBJECTS = [
   { value: "Order Issue",        icon: "📦", color: "#7c3aed" },

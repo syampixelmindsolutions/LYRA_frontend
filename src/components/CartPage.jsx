@@ -939,7 +939,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext";
 import axios from "axios";
 
-const API_BASE = "http://localhost:6055";
+const API_BASE = "https://lyra-backend-gilt.vercel.app";
 const getAuthHeader = () => {
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
   return user.token ? { Authorization: `Bearer ${user.token}` } : {};

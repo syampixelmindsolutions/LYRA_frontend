@@ -148,7 +148,7 @@ import axios from "axios";
 
 const WishlistContext = createContext();
 
-const API_BASE = "http://localhost:6055/api";
+const API_BASE = "https://lyra-backend-gilt.vercel.app/api";
 
 const getAuthHeader = () => {
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");

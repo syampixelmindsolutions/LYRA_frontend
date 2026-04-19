@@ -32,7 +32,7 @@ const DELIVERY_STEPS = ["Pending", "Processing", "Shipped", "Delivered"];
 // ─────────────────────────────────────────────────────────────────
 const apiFetch = async (path, options = {}) => {
   const u = JSON.parse(sessionStorage.getItem("user") || "{}");
-  const res = await fetch(`http://localhost:6055/api/admin${path}`, {
+  const res = await fetch(`https://lyra-backend-gilt.vercel.app/api/admin${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

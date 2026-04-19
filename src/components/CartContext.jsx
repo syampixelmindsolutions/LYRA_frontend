@@ -421,7 +421,7 @@ const CartContext = createContext({
   cartCount: 0, cartTotal: 0, shippingFee: 0, grandTotal: 0, loadingCart: false,
 });
 
-const API = axios.create({ baseURL: "http://localhost:6055/api/cart" });
+const API = axios.create({ baseURL: "https://lyra-backend-gilt.vercel.app/api/cart" });
 
 API.interceptors.request.use((cfg) => {
   try {
